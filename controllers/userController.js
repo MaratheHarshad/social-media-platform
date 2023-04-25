@@ -1,0 +1,66 @@
+const User = require("../models/userModel");
+const { createToken } = require("../authentication/getToken");
+const { validateUser } = require("../authentication/validation");
+
+// end point where authenticated user follows the user with provided user id
+
+exports.followUser = async (req, res) => {
+  return res.send({
+    message: "follow User with user id : " + req.params.id,
+  });
+};
+
+// authenticate the user here and return the validation token
+exports.authenticate = async (req, res) => {
+  let { email, password } = req.body;
+
+  //   await is important we need to wait till the Promise is resolved otherwise it provides undefined values
+  const { error } = await validateUser(req.body);
+
+  if (error) {
+    return res.status(400).send({ error: error.details[0].message });
+  }
+
+  const user = await User.findOne({ email: email });
+
+  //   if user exist
+  if (user) {
+    if (user.password !== password) {
+      return res.status(401).send({ error: "password is incorrect" });
+    } else {
+      // create the token and give it to the user
+      const token = await createToken(user);
+
+      return res.status(200).header({ token: token }).send({ token: token });
+    }
+  } else {
+    // if user not exist, create a new one
+
+    const user = await createUserObject(req.body);
+
+    const newUser = await User.create(user);
+
+    const token = await createToken(newUser);
+
+    return res.status(201).header({ token: token }).send({ token: token });
+  }
+};
+
+// create user javascript object
+const createUserObject = async (data) => {
+  //   considering that if name is not specified in the body default name is assign
+
+  let { name, email, password } = data;
+
+  if (!name) {
+    name = "Name undefined";
+  }
+
+  const newUser = {
+    name: name,
+    email: email,
+    password: password,
+  };
+
+  return newUser;
+};
