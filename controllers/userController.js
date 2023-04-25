@@ -1,6 +1,61 @@
 const User = require("../models/userModel");
 const { createToken } = require("../authentication/getToken");
-const { validateUser } = require("../authentication/validation");
+const { validateUser } = require("../authentication/userValidation");
+
+// - GET /api/user should authenticate the request and return the respective user profile.
+//     - RETURN: User Name, number of followers & followings.
+
+exports.getUser = async (req, res) => {
+  const { _id } = req.user;
+
+  const user = await User.findOne({ _id: _id });
+
+  const followingCount = user.following.length;
+  const followersCount = user.followers.length;
+
+  return res.status(200).send({
+    name: user.name,
+    followers: followersCount,
+    following: followingCount,
+  });
+};
+
+// POST /api/unfollow/{id} authenticated user would unfollow a user with {id}
+exports.unfollowUser = async (req, res) => {
+  // get the current authenticated user
+  const authenticatedUser = await User.findById(req.user._id);
+  const tobeunFollowUser = await User.findById(req.params.id);
+
+  // authenticated user is unfollowing himself
+  if (req.user._id === req.params.id) {
+    return res.status(403).send({ message: `Invalid request` });
+  }
+
+  // handle cases like
+
+  // user with id does not exist
+  if (!tobeunFollowUser) {
+    return res
+      .status(403)
+      .send({ message: `User with id:${req.params.id} does not exist` });
+  }
+
+  // unfollow only if authenticated person is following the user
+
+  if (authenticatedUser.following.includes(tobeunFollowUser._id)) {
+    authenticatedUser.following.remove(tobeunFollowUser._id);
+    await authenticatedUser.save();
+
+    tobeunFollowUser.followers.remove(authenticatedUser._id);
+    await tobeunFollowUser.save();
+
+    return res.status(200).send({
+      message: "UnFollowing to the user with id: " + tobeunFollowUser._id,
+    });
+  } else {
+    return res.status(200).send({ message: `Already UnFollowing` });
+  }
+};
 
 // end point where authenticated user follows the user with provided user id
 // POST /api/follow/{id} authenticated user would follow user with {id}
@@ -19,8 +74,13 @@ exports.followUser = async (req, res) => {
       .send({ message: `User with id:${req.params.id} does not exist` });
   }
 
+  // console.log(authenticatedUser);
+  // console.log(tobeFollowUser);
+  console.log(authenticatedUser._id);
+  console.log(tobeFollowUser._id);
+
   // authenticated user is following himself
-  if (authenticatedUser._id === tobeFollowUser._id) {
+  if (req.user._id === req.params.id) {
     return res.status(403).send({ message: `Invalid request` });
   }
 

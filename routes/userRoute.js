@@ -8,4 +8,8 @@ router.post("/authenticate", userController.authenticate);
 
 router.post("/follow/:id", verifyJWT, userController.followUser);
 
+router.post("/unfollow/:id", verifyJWT, userController.unfollowUser);
+
+router.get("/user", verifyJWT, userController.getUser);
+
 module.exports = router;
