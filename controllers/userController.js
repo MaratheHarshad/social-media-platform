@@ -3,10 +3,44 @@ const { createToken } = require("../authentication/getToken");
 const { validateUser } = require("../authentication/validation");
 
 // end point where authenticated user follows the user with provided user id
+// POST /api/follow/{id} authenticated user would follow user with {id}
 
 exports.followUser = async (req, res) => {
-  return res.send({
-    message: "follow User with user id : " + req.params.id,
+  // get the current authenticated user
+  const authenticatedUser = await User.findById(req.user._id);
+  const tobeFollowUser = await User.findById(req.params.id);
+
+  // handle cases like
+
+  // user with id does not exist
+  if (!tobeFollowUser) {
+    return res
+      .status(403)
+      .send({ message: `User with id:${req.params.id} does not exist` });
+  }
+
+  // authenticated user is following himself
+  if (authenticatedUser._id === tobeFollowUser._id) {
+    return res.status(403).send({ message: `Invalid request` });
+  }
+
+  // console.log(authenticatedUser);
+  // console.log(tobeFollowUser);
+
+  // if authenticated user alredy following the same user
+  if (authenticatedUser.following.includes(tobeFollowUser._id)) {
+    return res.status(200).send({ message: `Already following` });
+  }
+  // else update both the documents
+
+  authenticatedUser.following.push(tobeFollowUser._id);
+  await authenticatedUser.save();
+
+  tobeFollowUser.followers.push(authenticatedUser._id);
+  await tobeFollowUser.save();
+
+  return res.status(200).send({
+    message: "Following to the user with id: " + tobeFollowUser._id,
   });
 };
 

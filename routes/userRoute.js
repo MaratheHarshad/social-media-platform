@@ -1,7 +1,11 @@
 const router = require("express").Router();
 const userController = require("../controllers/userController");
+const { verifyJWT } = require("../authentication/verifyToken");
+
+// all the endpoints which are come under user route
 
 router.post("/authenticate", userController.authenticate);
-router.get("/follow/id", userController.followUser);
+
+router.post("/follow/:id", verifyJWT, userController.followUser);
 
 module.exports = router;
