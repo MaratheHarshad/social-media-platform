@@ -8,7 +8,9 @@ const verifyJWT = async (req, res, next) => {
   const token = req.header("token");
 
   if (!token) {
-    return res.status(404).send({ message: "Access denied" });
+    return res
+      .status(404)
+      .send({ message: "Access denied, JWT token required" });
   }
 
   // Remove 'Bearer ' prefix from token
@@ -21,7 +23,7 @@ const verifyJWT = async (req, res, next) => {
       next();
     }
   } catch (error) {
-    return res.status(400).send({ message: "invalid token" });
+    return res.status(401).send({ message: "invalid token" });
   }
 };
 

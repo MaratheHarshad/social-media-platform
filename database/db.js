@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const mongoose = require("mongoose");
 
 const database = main()
@@ -5,7 +7,7 @@ const database = main()
   .catch((err) => console.log(err));
 
 async function main() {
-  return await mongoose.connect("mongodb://127.0.0.1:27017/assignmentDB");
+  return await mongoose.connect(process.env.MONGO_URI);
 }
 
 module.exports = database;

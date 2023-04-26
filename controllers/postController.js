@@ -28,7 +28,9 @@ exports.getPostsByUser = async (req, res) => {
     })
     .exec();
 
-  // get all the posts by user by populating the comments field
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
 
   let userPosts = [];
 
@@ -143,7 +145,7 @@ exports.unlikePost = async (req, res) => {
         message: "unlike the post successfully with id:" + req.params.id,
       });
     } else {
-      return res.status(200).send({ message: "User Haven't like the post" });
+      return res.status(400).send({ message: "User Haven't like the post" });
     }
   } catch (error) {
     return res.status(400).send({ message: "incorrect post id" });
@@ -164,9 +166,9 @@ exports.likePost = async (req, res) => {
     }
 
     // if user already would have liked the post, then don't like
-    // return 200 already like
+    // return 400 already like
     if (post.likes.includes(req.user._id)) {
-      return res.status(200).send({ message: "Already like the post" });
+      return res.status(400).send({ message: "Already like the post" });
     } else {
       // else
       // add the current user._id in likes list of post
@@ -178,7 +180,7 @@ exports.likePost = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(400).send({ message: "incorrect post id" });
+    return res.status(404).send({ message: "incorrect post id" });
   }
 };
 
@@ -191,6 +193,10 @@ exports.deletePost = async (req, res) => {
 
   const post = await Post.findById({ _id: req.params.id });
 
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
+
   // if post does not exist
   if (!post) {
     return res.status(404).send({ message: "post does not exist" });
@@ -198,7 +204,9 @@ exports.deletePost = async (req, res) => {
 
   // if authenticated user not created the post
   if (!(post.author.toString() === user._id.toString())) {
-    return res.status(404).send({ message: "access denied" });
+    return res
+      .status(403)
+      .send({ message: "Access denied, cannot delete someone else's post" });
   } else {
     // delete the post
 
@@ -210,7 +218,7 @@ exports.deletePost = async (req, res) => {
     await user.save();
 
     return res
-      .status(200)
+      .status(204)
       .send({ message: "post deleted with id:" + post._id });
   }
 };
@@ -227,6 +235,10 @@ exports.posts = async (req, res) => {
   }
 
   const user = await User.findOne({ _id: req.user._id });
+
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
 
   try {
     //   // create new post object

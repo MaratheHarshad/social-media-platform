@@ -10,6 +10,10 @@ exports.getUser = async (req, res) => {
 
   const user = await User.findOne({ _id: _id });
 
+  if (!user) {
+    return res.status(404).send({ message: "User not found" });
+  }
+
   const followingCount = user.following.length;
   const followersCount = user.followers.length;
 
@@ -28,7 +32,7 @@ exports.unfollowUser = async (req, res) => {
 
   // authenticated user is unfollowing himself
   if (req.user._id === req.params.id) {
-    return res.status(403).send({ message: `Invalid request` });
+    return res.status(400).send({ message: `Invalid request` });
   }
 
   // handle cases like
@@ -36,7 +40,7 @@ exports.unfollowUser = async (req, res) => {
   // user with id does not exist
   if (!tobeunFollowUser) {
     return res
-      .status(403)
+      .status(404)
       .send({ message: `User with id:${req.params.id} does not exist` });
   }
 
@@ -60,7 +64,7 @@ exports.unfollowUser = async (req, res) => {
 // end point where authenticated user follows the user with provided user id
 // POST /api/follow/{id} authenticated user would follow user with {id}
 
-exports.followUser = async (req, res) => {
+exports.followUser = async (req, res) => {  
   // get the current authenticated user
   const authenticatedUser = await User.findById(req.user._id);
   const tobeFollowUser = await User.findById(req.params.id);
@@ -70,18 +74,16 @@ exports.followUser = async (req, res) => {
   // user with id does not exist
   if (!tobeFollowUser) {
     return res
-      .status(403)
+      .status(404)
       .send({ message: `User with id:${req.params.id} does not exist` });
   }
 
   // console.log(authenticatedUser);
   // console.log(tobeFollowUser);
-  console.log(authenticatedUser._id);
-  console.log(tobeFollowUser._id);
 
   // authenticated user is following himself
   if (req.user._id === req.params.id) {
-    return res.status(403).send({ message: `Invalid request` });
+    return res.status(400).send({ message: `Invalid request` });
   }
 
   // console.log(authenticatedUser);
