@@ -6,7 +6,7 @@ const express = require("express");
 
 // importing the routes
 
-const userRoute = require("./routes/userRoute");
+const apiRoute = require("./routes/apiRoute.js");
 
 const PORT = 3000;
 
@@ -19,7 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // routes
-app.use("/api", userRoute);
+app.use("/api", apiRoute);
 
 // home route of api
 app.get("/", (req, res) => {

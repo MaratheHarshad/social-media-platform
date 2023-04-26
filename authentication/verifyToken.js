@@ -3,9 +3,15 @@
 const jwt = require("jsonwebtoken");
 
 const verifyJWT = async (req, res, next) => {
+
+    
   const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY;
 
   const token = req.header("token");
+
+  if (!token) {
+    return res.status(404).send({ message: "Access denied" });
+  }
 
   // Remove 'Bearer ' prefix from token
   const tokenWithoutPrefix = token.replace("Bearer ", "");

@@ -19,7 +19,7 @@ const postsSchema = new Schema({
   },
   comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
   createdTime: {
-    type: Date,
+    type: String,
     required: true,
   },
   likes: [{ type: Schema.Types.ObjectId, ref: "User" }], // reference to the User model

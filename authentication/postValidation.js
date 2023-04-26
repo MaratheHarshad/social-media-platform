@@ -1,10 +1,10 @@
 const Joi = require("joi");
 
 const validatePost = async (data) => {
-  const schema = {
+  const schema = Joi.object({
     title: Joi.string().required(),
-    description: Joi.string.required(),
-  }.with("title", "description");
+    description: Joi.string().required(),
+  }).with("title", "description");
 
   return schema.validate({ title: data.title, description: data.description });
 };
