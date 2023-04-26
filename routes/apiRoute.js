@@ -24,5 +24,11 @@ router.post("/like/:id", verifyJWT, postController.likePost);
 
 router.post("/unlike/:id", verifyJWT, postController.unlikePost);
 
+router.post("/comment/:id", verifyJWT, postController.commentOnPost);
+
+router.get("/posts/:id", postController.getPost);
+
+router.get("/all_posts", verifyJWT, postController.getPostsByUser   );
+
 // export the express router
 module.exports = router;

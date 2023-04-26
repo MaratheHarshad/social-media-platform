@@ -1,6 +1,126 @@
 const { validatePost } = require("../authentication/postValidation");
+const { validateComment } = require("../authentication/commentValidation");
 const Post = require("../models/postModel");
 const User = require("../models/userModel");
+const Comment = require("../models/commentModel");
+
+// GET api/posts/{id} would return a single post with {id} populated with its number of likes and comments
+// RETURN: For each post return the following values
+// - id: ID of the post
+// - title: Title of the post
+// - desc: Description of the post
+// - created_at: Date and time when the post was created
+// - comments: Array of comments, for the particular post
+// - likes: Number of likes for the particular post
+
+// GET /api/all_posts would return all posts created by authenticated user sorted by post time.
+
+exports.getPostsByUser = async (req, res) => {
+  // access the authenticated user
+
+  const user = await User.findOne({ _id: req.user._id })
+    .populate({
+      path: "posts",
+      populate: {
+        path: "comments",
+        model: "Comment",
+      },
+    })
+    .exec();
+
+  // get all the posts by user by populating the comments field
+
+  let userPosts = [];
+
+  user.posts.map((post) => {
+    const postData = {
+      id: post._id,
+      title: post.title,
+      desc: post.description,
+      created_at: post.createdTime,
+      comments: post.comments,
+      likes: post.likes.length,
+    };
+
+    userPosts.push(postData);
+  });
+
+  // create userPosts empty list of object
+  // for each post create a postData and insert it into userPosts
+  // return userPosts into response
+
+  return res.send({ posts: userPosts });
+};
+
+exports.getPost = async (req, res) => {
+  try {
+    // access the post, by replacing all objectId of comments with original documents
+    const post = await Post.findOne({ _id: req.params.id })
+      .populate("comments")
+      .exec();
+
+    // if post does not exist
+    if (!post) {
+      return res.status(404).send({ message: "post does not exist" });
+    }
+
+    const postData = {
+      id: post._id,
+      title: post.title,
+      desc: post.description,
+      created_at: post.createdTime,
+      comments: post.comments,
+      likes: post.likes.length,
+    };
+
+    return res.status(200).send({ postData });
+  } catch (error) {
+    return res.status(400).send({ message: "invalid request" });
+  }
+};
+
+// - POST /api/comment/{id} add comment for post with {id} by the authenticated user.
+//     - Input: Comment
+//     - Return: Comment-ID
+
+exports.commentOnPost = async (req, res) => {
+  // access the post using try catch block
+
+  try {
+    const post = await Post.findById({ _id: req.params.id });
+
+    // if post does not exist
+    if (!post) {
+      return res.status(404).send({ message: "post does not exist" });
+    }
+
+    // validate the req body for comment (pending)
+    const { error } = await validateComment(req.body);
+
+    if (error) {
+      return res.status(400).send({ error: error.details[0].message });
+    }
+
+    // create a new comment
+
+    const comment = await Comment.create({
+      comment: req.body.comment,
+      author: req.user._id,
+    });
+
+    post.comments.push(comment);
+    await post.save();
+
+    return res.status(201).send({
+      message: "comment create for post id:" + req.params.id,
+      commentId: comment._id,
+    });
+
+    // push the created comment on comments list of post
+  } catch (error) {
+    return res.status(400).send({ message: "incorrect post id" });
+  }
+};
 
 // - POST /api/unlike/{id} would unlike the post with {id} by the authenticated user.
 

@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const User = require("./userModel");
 
 const commentSchema = new Schema({
-  content: {
+  comment: {
     type: String,
     required: true,
   },
