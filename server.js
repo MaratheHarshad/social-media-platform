@@ -4,6 +4,8 @@ require("dotenv").config();
 require("./database/db.js");
 const express = require("express");
 
+const cors = require("cors");
+
 // importing the routes
 
 const apiRoute = require("./routes/apiRoute.js");
@@ -17,6 +19,9 @@ const app = express();
 // body parser
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// allow cross origin resource sharing
+app.use(cors());
 
 // routes
 app.use("/api", apiRoute);
