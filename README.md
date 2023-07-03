@@ -1,4 +1,4 @@
-# Backend_Assignment_Reunion
+# Social Media Platform
 
 This api is hosted here
 
