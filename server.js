@@ -29,7 +29,7 @@ app.use("/api", apiRoute);
 // home route of api
 app.get("/", (req, res) => {
   res.send({
-    message: "API is working for Backend Assignment of Reunion",
+    message: "API is working",
   });
 });
 
