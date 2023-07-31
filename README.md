@@ -50,7 +50,7 @@ https://social-media-platform-ajgu.onrender.com/
         - likes: Number of likes for the particular post
 
 
-## Tech Stack
+## Tech Stack:
 
 - NodeJs (express.js) as a server-side scripting
 - JWT (A JS library) for authentication and authorization
